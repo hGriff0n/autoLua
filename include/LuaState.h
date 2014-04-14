@@ -13,7 +13,7 @@ namespace autoLua {
 		public:
 			LuaState() : L(luaL_newstate()) { }
 
-			lua_State* operator*(void) {
+			operator lua_State*() {
 				return L;
 			}
 

@@ -14,7 +14,6 @@ using namespace std;
 
 int main(int argc, const char* argv[]) {
 	LuaState L;
-	lua_State* lua = *L;
 	
 	// functions to test
 	function<int(int,int,int)> summer = [](int x, int y, int z) { return x + y + z; };
@@ -43,22 +42,22 @@ int main(int argc, const char* argv[]) {
 	// test wrapping with no arguments (Passed)
 	// test wrapping with multiple return (Passed)
 
-	auto someSplits = makeWrapper(lua, splitter);
-	lua_setglobal(lua, "splits");
+	auto someSplits = makeWrapper(L, splitter);
+	lua_setglobal(L, "splits");
 	
 	//_print_tuple(std::make_tuple(5, "Hello", 3, 2));
 
 	// test suite
 
-	lua_getglobal(lua, "splits");
+	lua_getglobal(L, "splits");
 
-	lua_pushnumber(lua, 5.3);	// prints "5" & "2" oddly
+	lua_pushnumber(L, 5.3);	// prints "5" & "2" oddly
 								// prints "5" & "4" when I pass 5.4 though
 
-	lua_pcall(lua, 1, 2, 0);
+	lua_pcall(L, 1, 2, 0);
 	
-	cout << LuaTypeTraits<double>::getValue(lua, -1) << endl;
-	cout << LuaTypeTraits<double>::getValue(lua, -2) << endl;
+	cout << LuaTypeTraits<double>::popValue(L) << endl;
+	cout << LuaTypeTraits<double>::popValue(L) << endl;
 
 	cin.get();
 }

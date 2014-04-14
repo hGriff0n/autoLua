@@ -75,7 +75,7 @@ namespace autoLua {
 		}
 	};
 
-	// Factories
+	// Factories for creation of FunctionWrappers
 	template <typename... Args>
 	FunctionWrapper<0, void, Args...> makeWrapper(lua_State* L, const std::function<void(Args...)>& func) {
 		return FunctionWrapper<0, void, Args...>(L, func);

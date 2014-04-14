@@ -7,8 +7,6 @@
 #include <tuple>
 #include <functional>
 
-#include <iostream>
-
 namespace autoLua {
 	namespace impl {
 
@@ -29,15 +27,9 @@ namespace autoLua {
 
 
 		// Pack args into a tuple
-		// adjust so it uses pseudo indices instead of real indices somehow ???
-		template <typename... Args, size_t... N>
-		std::tuple<Args...> _getArgs(lua_State* L, _Indices<N...> idx) {
-			return std::make_tuple(LuaTypeTraits<Args>::getValue(L, N + 1)...);
-		}
 		template <typename... Args>
 		std::tuple<Args...> _getArgs(lua_State* L) {
-			typename _IndicesBuilder<sizeof...(Args)>::type idxs;
-			return _getArgs<Args...>(L, idxs);
+			return std::make_tuple<Args...>(LuaTypeTraits<Args>::popValue(L, -1)...);
 		}
 
 
@@ -63,6 +55,7 @@ namespace autoLua {
 			_push_tuple(L, _intTags<sizeof...(Args)>(), std::forward<std::tuple<Args...>>(values));
 		}
 
+		// Helpers for tuple override of _push
 		template <int N, typename... Args>
 		void _push_tuple(lua_State* L, _intTags<N> x, std::tuple<Args...> values) {
 			_push(L, std::get<std::tuple_size<std::tuple<Args...>>::value - N>(values));
@@ -72,6 +65,15 @@ namespace autoLua {
 		void _push_tuple(lua_State* L, _intTags<1> x, std::tuple<Args...> values) {
 			_push(L, std::get<std::tuple_size<std::tuple<Args...>>::value - 1>(values));
 		}
+
+		template <typename... T>
+		struct LuaTypeTraits<std::tuple<T...>> {
+			using type = std::tuple<T...>;
+
+			static type getValue(lua_State* L, int idx) { }
+			static type popValue(lua_State* L, int idx) { }
+			static void pushValue(lua_State* L, type& val) { }
+		};
 
 	}
 }

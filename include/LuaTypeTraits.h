@@ -7,23 +7,20 @@
 
 // create function for mass comparison of values
 // like " i =|= (1, 2, 3) " <- read: " i == 1 || i == 2 | i == 3 "
-
-/*
 template <typename T>
-bool operator==(T& obj, std::initializer_list<T> comp_list) {
-
+bool equalsOne(T obj, std::initializer_list<T> comp_list) {
+	for ( auto x : comp_list )
+		if ( obj == x ) return true;
+	return false;
 }
 template <typename T>
-bool operator!=(T& obj, std::initializer_list<T> comp_list) {
-	return !operator==(obj,comp_list);
+bool notEquals(T obj, std::initializer_list<T> comp_list) {
+	return !equalsOne(obj, comp_list);
 }
-*/
 
 // convert a negative lua index into the positive index that points to the same spot
 int lua_absindex(lua_State* L, int idx) {
-	// equals_all<LUA_GLOBALSINDEX>(idx);
-	// idx != { LUA_GLOBALSINDEX }
-	if ( idx < 0 && idx != LUA_GLOBALSINDEX )
+	if ( idx < 0 && notEquals(idx, { LUA_GLOBALSINDEX }) )
 		return lua_gettop(L) + idx + 1;
 	return idx;
 }
@@ -40,40 +37,63 @@ namespace autoLua {
 
 		template <typename T>
 		struct LuaTypeTraits {
-			static T getValue(lua_State* L, int idx) { }
-			static void pushValue(lua_State* L, T& val) { }
+			using type = T;
+
+			static type getValue(lua_State* L, int idx = -1) { }
+			static type popValue(lua_State* L, int idx = -1) { }
+			static void pushValue(lua_State* L, type& val) { }
 		};
 
 		template <>
 		struct LuaTypeTraits<int> {
-			static int getValue(lua_State* L, int idx) {
+			using type = int;
+
+			static type getValue(lua_State* L, int idx = -1) {
 				return luaL_checkint(L, lua_absindex(L,idx));
 			}
-			static void pushValue(lua_State* L, int val) {
+			static type popValue(lua_State* L, int idx = -1) {
+				auto x = LuaTypeTraits<type>::getValue(L, idx);
+				lua_remove(L, idx);
+				return x;
+			}
+			static void pushValue(lua_State* L, type val) {
 				lua_pushinteger(L, val);
 			}
 		};
 		
 		template <>
 		struct LuaTypeTraits<lua_Number> {
-			static lua_Number getValue(lua_State* L, int idx) {
+			using type = lua_Number;
+
+			static type getValue(lua_State* L, int idx = -1) {
 				return luaL_checknumber(L, lua_absindex(L,idx));
 			}
-			static void pushValue(lua_State* L, lua_Number val) {
+			static type popValue(lua_State* L, int idx = -1) {
+				auto x = LuaTypeTraits<type>::getValue(L, idx);
+				lua_remove(L, idx);
+				return x;
+			}
+			static void pushValue(lua_State* L, type val) {
 				lua_pushnumber(L, val);
 			}
 		};
 
 		template<>
 		struct LuaTypeTraits<std::string> {
-			static std::string getValue(lua_State* L, int idx) {
+			using type = std::string;
+
+			static type getValue(lua_State* L, int idx = -1) {
 				return luaL_checkstring(L, lua_absindex(L, idx));
 			}
-			static void pushValue(lua_State* L, std::string val) {
+			static type popValue(lua_State* L, int idx = -1) {
+				auto x = LuaTypeTraits<type>::getValue(L, idx);
+				lua_remove(L, idx);
+				return x;
+			}
+			static void pushValue(lua_State* L, type val) {
 				lua_pushstring(L, val.c_str());
 			}
 		};
-		
 
 	}
 }
