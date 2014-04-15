@@ -2,6 +2,7 @@
 
 #include "LuaState.h"
 #include "FunctionWrapper.h"
+#include "LuaTuple.h"
 
 #include <iostream>
 
@@ -49,15 +50,12 @@ int main(int argc, const char* argv[]) {
 
 	// test suite
 
-	lua_getglobal(L, "splits");
-
-	lua_pushnumber(L, 5.3);	// prints "5" & "2" oddly
-								// prints "5" & "4" when I pass 5.4 though
-
-	lua_pcall(L, 1, 2, 0);
+	double x, y;
+	auto tmp = L["splits"](5.3);
+	luaTie(x,y) = tmp;
 	
-	cout << LuaTypeTraits<double>::popValue(L) << endl;
-	cout << LuaTypeTraits<double>::popValue(L) << endl;
+	cout << x << endl;
+	cout << y << endl;
 
 	cin.get();
 }
