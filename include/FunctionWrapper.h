@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "impl.h"
+#include "function_impl.h"
 
 namespace autoLua {
 

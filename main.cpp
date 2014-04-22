@@ -7,11 +7,9 @@
 #include <iostream>
 
 using namespace autoLua;
-using namespace impl;
 using namespace std;
 
 // possible to bind variadic functions ???
-// slightly hackish implementation of multiple return wrapper (uses _intTags struct, would prefer use of _Indices)
 
 int main(int argc, const char* argv[]) {
 	LuaState L;
@@ -35,18 +33,9 @@ int main(int argc, const char* argv[]) {
 		lua_pushinteger(L, (x + y));
 		return 1;
 	};
-	
-
-	// test general wrapping (Passed)
-	// test wrapping with void return (Passed)
-	// test wrapping over lua_CFunction (Passed)
-	// test wrapping with no arguments (Passed)
-	// test wrapping with multiple return (Passed)
 
 	auto someSplits = makeWrapper(L, splitter);
 	lua_setglobal(L, "splits");
-	
-	//_print_tuple(std::make_tuple(5, "Hello", 3, 2));
 
 	// test suite
 

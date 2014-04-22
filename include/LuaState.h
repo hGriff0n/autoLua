@@ -2,8 +2,12 @@
 
 #pragma once
 
-#include "lua.hpp"
-#include "LuaCaller.h"
+#include "LuaVarHelper.h"
+
+// TODO:
+// call lua functions with args
+// index lua variables (tables)
+// custom opening of lua_State*
 
 namespace autoLua {
 
@@ -13,16 +17,25 @@ namespace autoLua {
 
 		public:
 			LuaState() : L(luaL_newstate()) { }
-
+	
 			operator lua_State*() {
 				return L;
 			}
-			
-			LuaCaller operator[](std::string func) {
-				lua_getglobal(L, func.c_str());
+
+			template <typename T>
+			LuaVarHelper operator[](T name) {
+				return LuaVarHelper(L, name);
+			}
+			template <int N>
+			LuaVarHelper operator[](const char(&name)[N]) {
+				return (*this)[std::string(name)];
+			};
+
+			// call(std::string func)
+			LuaConverter operator()(std::string code) {
+				luaL_dostring(L, code.c_str());
 				return L;
 			}
-
 
 	};
 
