@@ -2,9 +2,7 @@
 
 #pragma once
 
-#include "impl.h"
-
-#include <iostream>
+#include "impl/function_impl.h"
 
 namespace autoLua {
 
@@ -20,6 +18,7 @@ namespace autoLua {
 			~LuaConverter() { L = nullptr; }
 
 			// tries to convert LuaConverter to std::tuple when I don't want it to (and it shouldn't)
+			// see error comment in main.cpp
 			template <typename T>
 			operator T() {
 				return LuaTypeTraits<T>::popValue(L);
@@ -32,9 +31,8 @@ namespace autoLua {
 
 	};
 
-	template <typename T, typename std::enable_if<std::is_same<T,int>::value,int>::type = 0>
+	/*template <typename T, typename std::enable_if<std::is_same<T,int>::value,int>::type = 0>
 	int test(T x) {
 		return x;
-	}
-
+	}*/
 }

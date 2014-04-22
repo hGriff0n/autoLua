@@ -24,8 +24,9 @@ namespace autoLua {
 			~LuaCaller() { L = nullptr; }
 
 			template <typename... Args>
-			LuaConverter operator()(Args... args) {
-				return pushAndCall(sizeof...(Args), std::make_tuple(args...));
+			LuaConverter operator()(Args&&... args) {
+				// if ( !lua_isfunction(L, -sizeof...(Args)) ) throw;
+				return std::forward<LuaConverter>(pushAndCall(sizeof...(Args), std::make_tuple(args...)));
 			}
 	};
 

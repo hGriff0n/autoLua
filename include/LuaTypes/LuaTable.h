@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "LuaTypeTraits.h"
+#include "impl/LuaTypeTraits.h"
 
 namespace autoLua {
 

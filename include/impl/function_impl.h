@@ -66,14 +66,5 @@ namespace autoLua {
 			_push(L, std::get<std::tuple_size<std::tuple<Args...>>::value - 1>(values));
 		}
 
-		template <typename... T>
-		struct LuaTypeTraits<std::tuple<T...>> {
-			using type = std::tuple<T...>;
-
-			static type getValue(lua_State* L, int idx) { }
-			static type popValue(lua_State* L, int idx) { }
-			static void pushValue(lua_State* L, type& val) { }
-		};
-
 	}
 }

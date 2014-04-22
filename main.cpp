@@ -2,49 +2,56 @@
 
 #include "LuaState.h"
 #include "FunctionWrapper.h"
-#include "LuaTuple.h"
+
+#include "impl/Tuple.h"
+#include "LuaTypes/LuaNil.h"
+#include "Luatypes/LuaTable.h"
 
 #include <iostream>
 
 using namespace autoLua;
+using namespace autoLua::impl;
 using namespace std;
 
 // possible to bind variadic functions ???
 
+#define showLine(x) cout << x << endl
+#define showPause(x) showLine(x); cin.get()
+
+
 int main(int argc, const char* argv[]) {
 	LuaState L;
-	
-	// functions to test
-	function<int(int,int,int)> summer = [](int x, int y, int z) { return x + y + z; };
-	function<void(string, int)> printer = [] (string x, int y) {
-		cout << "string param " << x << "\ninteger param " << y << endl;
-	};
-	function<tuple<double, double>(double)> splitter = [] (double x) -> tuple<int, int> {
-		double y = 0;
-		double z = 10.0 * modf(x, &y);
-		return make_tuple(z, y);
-	};
-	function<int(void)> writer = [] () -> int {
-		cout << "Writing from C++ in lua called from C++!\n";
-		return 1;
-	};
-	function<int(lua_State*)> adder = [] (lua_State* L) -> int {
-		int x = luaL_checkinteger(L, -1) , y = luaL_checkinteger(L, -2);
-		lua_pushinteger(L, (x + y));
-		return 1;
-	};
+	double x, y, z;
 
-	auto someSplits = makeWrapper(L, splitter);
-	lua_setglobal(L, "splits");
+	// demonstrating current function wrapping syntax
+	function<tuple<double, double, double>(double, double)> combiner = [] (double x, double y) -> tuple<double, double, double> {
+		return make_tuple(x, y, x + y);
+	};
+	auto someCombo = makeWrapper(L, combiner);
+	lua_setglobal(L, "combo");
 
-	// test suite
 
-	double x, y;
-	auto tmp = L["splits"](5.3);
-	luaTie(x,y) = tmp;
-	
-	cout << x << endl;
-	cout << y << endl;
+	// luaTie(x,y,z) = L["combo"](5.3, 4.2);
+	// top throws error C4716 'LuaTypeTraits<LuaTuple<double,double,double>>::popValue
+	// must return a value', yet the bottom doesn't !!!???
+	{ auto tmp = L["combo"](5.3, 4.2); luaTie(x, y, z) = tmp; }
+
+	showLine(x);
+	showLine(y);
+	showLine(z);
+
+
+	// demonstrating recent addition
+	L["test"]["randVal"]["randKey"] = 5.5;
+	luaL_remove(L, -2);	// needs to go into LuaVarHelper destructor
+
+	showLine((double)L["test"]["randVal"]["randKey"]);
+
+	// should go in destructor
+	luaL_remove(L, -2);
+	luaL_remove(L, -2);
+
+	// cout << LuaStackPos<-1>::getValue(lua) << endl;
 
 	cin.get();
 }

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "LuaVarHelper.h"
+#include "Helpers/LuaVarHelper.h"
 
 // TODO:
 // call lua functions with args

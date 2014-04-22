@@ -2,8 +2,7 @@
 
 #pragma once
 
-#include <tuple>
-#include "LuaConverter.h"
+#include "Helpers/LuaConverter.h"
 
 namespace autoLua {
 
@@ -15,13 +14,12 @@ namespace autoLua {
 		public:
 			LuaTuple(T&... args) : _tuple(args...) { }
 
-			void operator=(LuaConverter& conv) {
+			void operator=(LuaConverter conv) {
 				conv.move(_tuple);
 			}
 
 	};
 
-	// just in case there are problems with std::tie
 	template <typename... Args>
 	LuaTuple<Args...> luaTie(Args&... args) {
 		return LuaTuple<Args...>(args...);
