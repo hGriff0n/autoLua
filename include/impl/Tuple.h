@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Helpers/LuaConverter.h"
+#include "Helpers/LuaStack.h"
 
 namespace autoLua {
 
@@ -14,7 +14,7 @@ namespace autoLua {
 		public:
 			LuaTuple(T&... args) : _tuple(args...) { }
 
-			void operator=(LuaConverter conv) {
+			void operator=(LuaStack conv) {
 				conv.move(_tuple);
 			}
 
