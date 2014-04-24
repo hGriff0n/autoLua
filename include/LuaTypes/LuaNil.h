@@ -24,9 +24,10 @@ namespace autoLua {
 				return LuaNil();
 			}
 			static type popValue(lua_State* L, int idx = -1) {
+				luaL_remove(L, idx);
 				return LuaNil();
 			}
-			static void pushValue(lua_State* L, type& val, int N = 1) {
+			static void pushValue(lua_State* L, type val, int N = 1) {
 				for ( auto i = 0; i != N; ++i )
 					lua_pushnil(L);
 			}
