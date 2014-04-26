@@ -66,5 +66,11 @@ namespace autoLua {
 			_push(L, std::get<std::tuple_size<std::tuple<Args...>>::value - 1>(values));
 		}
 
+		// base class for polymorphic storage of FunctionWrapper in lua_State
+		struct BaseFunctionWrapper {
+			virtual ~BaseFunctionWrapper() { }
+			virtual int execute(lua_State*) = 0;
+		};
+
 	}
 }

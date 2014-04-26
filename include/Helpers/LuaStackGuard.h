@@ -5,8 +5,6 @@
 #include "lua.hpp"
 
 namespace autoLua {
-	namespace impl {
-
 		// StackGuard class to prevent the lua stack from 'accidentally' growing during use (RAII)
 
 		class LuaStackGuard {
@@ -29,5 +27,4 @@ namespace autoLua {
 				}
 		};
 
-	}
 }

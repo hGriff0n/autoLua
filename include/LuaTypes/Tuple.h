@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Helpers/LuaStack.h"
+#include "Helpers\LuaStack.h"
 
 namespace autoLua {
 

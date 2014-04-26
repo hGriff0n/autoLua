@@ -2,7 +2,8 @@
 
 #pragma once
 
-#include "impl/LuaTypeTraits.h"
+// way to remove this dependency through forward declaring LuaTypeTraits ???
+#include "impl\LuaTypeTraits.h"
 
 namespace autoLua {
 

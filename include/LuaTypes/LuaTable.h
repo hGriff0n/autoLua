@@ -42,6 +42,7 @@ namespace autoLua {
 
 		template <typename... T>
 		std::tuple<T...> _getLuaTable(lua_State* L, int idx) {
+			idx = lua_realindex(L, idx);
 			while ( lua_next(L, idx) ) {
 				lua_pushvalue(L, -2);
 			}

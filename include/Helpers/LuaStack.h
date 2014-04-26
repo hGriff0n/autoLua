@@ -5,6 +5,7 @@
 #include "impl/function_impl.h"
 
 // Helper class that interacts directly with the lua stack
+// Replaced LuaConverter (which might be brought back due to it's highly tailored nature)
 
 // slight problem with tuple override (see error message in main.cpp)
 

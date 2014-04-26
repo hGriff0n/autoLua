@@ -7,7 +7,7 @@
 #include "LuaTypes\LuaNil.h"
 #include "LuaTypes\LuaTable.h"
 
-#include "impl\LuaStackGuard.h"
+#include "Helpers\LuaStackGuard.h"
 
 #include "debugTesting.h"
 
@@ -40,13 +40,15 @@ int main(int argc, const char* argv[]) {
 	function<tuple<double, double, double>(double, double)> combiner = [] (double x, double y) -> tuple<double, double, double> {
 		return make_tuple(x, y, x + y);
 	};
-	auto someCombo = makeWrapper(L, combiner);
-	lua_setglobal(L, "combo");
+	L["combo"] = combiner;
 
 	// luaTie(x,y,z) = L["combo"](5.3, 4.2);
 	// top throws error C4716 'LuaTypeTraits<LuaTuple<double,double,double>>::popValue
 	// must return a value', yet the bottom doesn't !!!???
-	{ auto tmp = L["combo"](5.3, 4.2); luaTie(x, y, z) = tmp; }
+	{
+		auto tmp = L["combo"](5.3, 4.2);
+		luaTie(x, y, z) = tmp;
+	}
 
 	showLine(x);
 	showLine(y);
@@ -54,7 +56,7 @@ int main(int argc, const char* argv[]) {
 	showLine("");
 
 	{
-		impl::LuaStackGuard guard(L);
+		LuaStackGuard guard(L);
 
 		*L = 3.5;
 		*L = true;

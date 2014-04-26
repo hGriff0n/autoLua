@@ -3,15 +3,14 @@
 #pragma once
 
 #include "LuaCaller.h"
-#include "FunctionWrapper.h"
-
-#include "impl/LuaVarImpl.h"	// will be phased out later
+#include "LuaStack.h"
+#include "LuaStackGuard.h"
+#include "impl/LuaRegistry.h"
 
 #include <bitset>
 
 namespace autoLua {
 
-	class LuaState;
 	/*
 	usage:
 		value
@@ -25,11 +24,13 @@ namespace autoLua {
 	
 	*/
 
-	// extract the `impl` functions inline
+	// Helper class that interacts with the lua variable heiarchy
+
 	class LuaVarHelper {
 		private:
 			lua_State* L;
 			std::bitset<3> flags;
+			impl::LuaRegistry* registry;
 			/*
 			all flags default to on
 			create enum for indexes ???
@@ -69,13 +70,11 @@ namespace autoLua {
 
 		public:
 		template <typename T>
-			LuaVarHelper(lua_State* lua, T field) : L(lua), flags(6) {
-				LuaTypeTraits<T>::pushValue(L, field, 2);
+			LuaVarHelper(lua_State* lua, T field, impl::LuaRegistry* records) : L(lua), flags(7), registry(records) {
+				impl::LuaTypeTraits<T>::pushValue(L, field, 2);
 				lua_gettable(L, LUA_GLOBALSINDEX);
 			}
-			~LuaVarHelper() {
-				L = nullptr;
-			}
+			~LuaVarHelper() { }
 
 			std::string type() {
 				return lua_typename(L, lua_type(L, -1));
@@ -95,7 +94,7 @@ namespace autoLua {
 				if ( !flags[1] )
 					luaL_remove(L, -2);
 
-				LuaTypeTraits<T>::pushValue(L, field, 2);
+				impl::LuaTypeTraits<T>::pushValue(L, field, 2);
 				getStackField(-3);
 
 				flags[1] = 0;
@@ -108,7 +107,7 @@ namespace autoLua {
 
 			template <typename T>
 			void operator=(T val) {
-				LuaTypeTraits<T>::pushValue(L, val);
+				impl::LuaTypeTraits<T>::pushValue(L, val);
 				setToValue();
 			}
 			void operator=(LuaVarHelper& other) {
@@ -116,22 +115,25 @@ namespace autoLua {
 			}
 			template <typename Ret, typename... Args>
 			void operator=(std::function<Ret(Args...)>& func) {
-
+				registerFunction(registry, std::forward<WrapperPtr>(makeWrapper(L, func)));
+				setToValue();
 			}
 			template <typename... Ret, typename... Args>
 			void operator=(std::function<std::tuple<Ret...>(Args...)>& func) {
-
+				registerFunction(registry, std::forward<WrapperPtr>(makeWrapper(L, func)));
+				setToValue();
 			}
 
 			template <typename... Args>
-			LuaConverter operator()(Args&&... args) {
-				if ( !LuaTypeTraits<LuaFunction>::isA(L) ) throw;
-				return LuaCaller(L)(std::forward<Args>(args)...);
+			LuaStack operator()(Args&&... args) {
+				/* auto delta = */
+				LuaCaller(L).call(std::forward<Args>(args)...);
+				return L;
 			}
 
 			template <typename T>
 			operator T() {
-				return (T)LuaConverter(L);
+				return (T)LuaStack(L);
 			}
 
 
