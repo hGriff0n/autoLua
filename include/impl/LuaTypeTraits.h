@@ -134,6 +134,26 @@ namespace autoLua {
 			}
 		};
 
+		// defined in terms of LuaTypeTraits<std::string>
+		// may be more useful to define the other way around (LuaTypeTraits<string> in terms of LuaTypeTraits<const char*>)
+		template<>
+		struct LuaTypeTraits<const char*> {
+			using type = const char*;
+
+			static type getValue(lua_State* L, int idx = -1) {
+				return LuaTypeTraits<std::string>::getValue(L, idx).c_str();
+			}
+			static type popValue(lua_State* L, int idx = -1) {
+				return LuaTypeTraits<std::string>::popValue(L, idx).c_str();
+			}
+			static void pushValue(lua_State* L, type val, int N = 1) {
+				LuaTypeTraits<std::string>::pushValue(L, val, N);
+			}
+			static bool isA(lua_State* L, int idx = -1) {
+				return LuaTypeTraits<std::string>::isA(L, idx);
+			}
+		};
+
 	}
 
 }

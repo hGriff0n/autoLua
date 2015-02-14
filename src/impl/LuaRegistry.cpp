@@ -7,20 +7,18 @@
 namespace autoLua {
 
 	class impl::LuaRegistry {
-		private:
-			std::vector<WrapperPtr> function_set;
-
 		public:
-			LuaRegistry(lua_State* lua) { }
-			~LuaRegistry() { }
+			std::vector<WrapperPtr> function_set;
+			lua_State* L;
 
-			std::vector<WrapperPtr>& functions() {
-				return function_set;
+			LuaRegistry(lua_State* lua) : L(lua) { }
+			~LuaRegistry() {
+				L = nullptr;
 			}
 	};
 
 	void registerFunction(impl::LuaRegistry* registry, WrapperPtr&& item) {
-		registry->functions().emplace_back(std::forward<WrapperPtr>(item));
+		registry->function_set.emplace_back(std::forward<WrapperPtr>(item));
 	}
 
 	impl::LuaRegistry* lua_newregister(lua_State* L) {
@@ -28,6 +26,10 @@ namespace autoLua {
 	}
 	void lua_closeregister(impl::LuaRegistry* registry) {
 		delete registry;
+	}
+
+	lua_State* getRegisterState(impl::LuaRegistry* registry) {
+		return registry->L;
 	}
 
 }

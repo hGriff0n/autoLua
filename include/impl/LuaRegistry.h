@@ -6,6 +6,7 @@
 #include <memory>
 
 namespace autoLua {
+	// pimpl class (implementation is in .cpp file)
 
 	typedef std::unique_ptr<impl::BaseFunctionWrapper> WrapperPtr;
 
@@ -15,8 +16,11 @@ namespace autoLua {
 	}
 
 	void registerFunction(impl::LuaRegistry*, WrapperPtr&&);
+	//void registerConstructor(impl::LuaRegistry*, WrapperPtr&&);
 
 	impl::LuaRegistry* lua_newregister(lua_State*);
 	void lua_closeregister(impl::LuaRegistry*);
+
+	lua_State* getRegisterState(impl::LuaRegistry*);
 
 }

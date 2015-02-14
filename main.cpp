@@ -17,16 +17,22 @@ using namespace autoLua;
 using namespace autoLua::impl;
 using namespace std;
 
-// possible to bind variadic functions ???
 
 // TODO:
+// Improve LuaTable
+// Add Exceptions and Error Handling
+// C++/lua object binding/wrapping/etc.
+// Start filling in github readme with information about the interface and project
 // implement LuaStackGuard within the various Lua_ classes
-// Register functions with lua using the indexing syntax
-// Pass values between lua variables using the indexing syntax
 // LuaThreadState class
-// Move non-template function definitions to source files
-// Move commonly used 'function_impl' functions to seperate file ???
 // Correct autoLua::impl::_getLuaTable implementation as mentioned in the function
+// Reduce number of copies made with LuaVariable
+// Use std pointers instead of raw ones in Lua_ classes (I'm already including <memory>)
+
+// possible to bind variadic functions ???
+// possible to bind lambdas (templated too) ???
+// Completely merge working files with the github files (general commit)
+// mark issue in github for assigning LuaStack to a tuple (fixed???)
 
 #define showLine(x) cout << x << endl
 #define showPause(x) showLine(x); cin.get()
@@ -35,19 +41,24 @@ using namespace std;
 int main(int argc, const char* argv[]) {
 	LuaState L;
 	double x, y, z;
-
-	// demonstrating current function wrapping syntax
 	function<tuple<double, double, double>(double, double)> combiner = [] (double x, double y) -> tuple<double, double, double> {
 		return make_tuple(x, y, x + y);
 	};
-	L["combo"] = combiner;
 
-	// luaTie(x,y,z) = L["combo"](5.3, 4.2);
-	// top throws error C4716 'LuaTypeTraits<LuaTuple<double,double,double>>::popValue
-	// must return a value', yet the bottom doesn't !!!???
 	{
-		auto tmp = L["combo"](5.3, 4.2);
-		luaTie(x, y, z) = tmp;
+		LuaStackGuard guard(L);
+
+		L["tmp"]["combo"] = combiner;
+		L["tmp"]["t"] = 5;
+		L["foo"] = L["tmp"]["t"];
+		showLine((int)L["foo"]);
+	}
+
+	{
+		LuaStackGuard guard(L);
+
+		luaTie(x, y, z) = L["tmp"]["combo"](5.3, 4.2);    // The error has mysteriously disappeard (C4716)
+		// if it does reappear: auto tmp = L["tmp"]["combo"](5.3, 4.2); luaTie(x, y, z) = tmp;
 	}
 
 	showLine(x);
@@ -58,26 +69,15 @@ int main(int argc, const char* argv[]) {
 	{
 		LuaStackGuard guard(L);
 
-		*L = 3.5;
-		*L = true;
-		*L = "Hello";
+		*L << "Hello" << makeLuaTable("Goodbye", 5, 3, 4);
+		makeMetatable(L);
+
 		debug::debugStack(L, cout);
 	}
 	debug::debugStack(L, cout);
 	showLine("The stack has been cleared!!!");
 
-
-	// demonstrating recent addition
-	L["test"]["randVal"]["randKey"] = 5.5;
-	luaL_remove(L, -2);	// needs to go into LuaVarHelper destructor
-
-	showLine((double)L["test"]["randVal"]["randKey"]);
-
-	// should go in destructor
-	luaL_remove(L, -2);
-	luaL_remove(L, -2);
-
-	// cout << LuaStackPos<-1>::getValue(lua) << endl;
+	// cout << get<-1>(L) << endl;
 
 	cin.get();
 }

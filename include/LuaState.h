@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Helpers\LuaVarHelper.h"
+#include "Helpers\LuaVariable.h"
 #include "Helpers\LuaStack.h"
 
 // Wrapper of lua_State that provides a central hub for working with lua
@@ -17,43 +17,40 @@ namespace autoLua {
 			bool stack_trace_on_debug;
 			impl::LuaRegistry* registry;
 
-			static lua_State* defaultSetup() {
-				return luaL_newstate();
-			}
+			static lua_State* defaultSetup();
 
 		public:
-			LuaState(bool debug = false) :
-					L(LuaState::defaultSetup()), stack_trace_on_debug(debug) {
+			LuaState(bool = false);
+			LuaState(const std::function<lua_State*(void)>& setupLua, bool debug = false)
+					: L(setupLua()), stack_trace_on_debug(debug) {
 				registry = lua_newregister(L);
 			}
-			LuaState(const std::function<lua_State*(void)>& setupLua, bool debug = false)
-					: L(setupLua()), stack_trace_on_debug(debug) { }
-			~LuaState() {
-				lua_closeregister(registry);
-				lua_close(L);
-				L = nullptr;
-			}
+			~LuaState();
 	
-			operator lua_State*() {
-				return L;
-			}
-			LuaStack operator*(void) {
-				return L;
-			}
+			// get underlying lua_State* implicitly for reverse compatibility with standard lua library functions
+			operator lua_State*();
+			// temporary method for LuaMetatable work
+			operator impl::LuaRegistry*();
+
+			// get direct access to the lua stack
+			LuaStack operator*(void);
 
 			template <typename T>
-			LuaVarHelper operator[](T name) {
-				return LuaVarHelper(L, name, registry);
+			LuaVariable operator[](T name) {
+				return LuaVariable(L, name, registry);
 			}
-			template <int N>
-			LuaVarHelper operator[](const char(&name)[N]) {
-				return (*this)[std::string(name)];
-			};
 
-			// call(std::string func)
-			LuaStack operator()(std::string code) {
-				luaL_dostring(L, code.c_str());
-				return L;
+			LuaStack run(std::string);
+			//LuaState& load(std::string);
+
+			// bind c++ class to lua (subject to change)
+			template <class obj>
+			LuaState& expose() {
+				return *this;
+			}
+			template <class obj>
+			LuaState& expose(obj&& placeholder) {
+				return expose<obj>();
 			}
 
 	};

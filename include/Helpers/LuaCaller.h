@@ -16,9 +16,12 @@ namespace autoLua {
 		protected:
 			template <typename... Args>
 			lua_State* checkPushCall(Args&&... args) {
-				if ( !LuaTypeTraits<LuaFunction>::isA(L) ) throw("Not a function");
+				if (!LuaTypeTraits<LuaFunction>::isA(L)) throw("Not a function");     // Change this to be an exception
+				//if (!LuaTypeTraits<LuaFunction>::isA(L)) throw LuaTypeError(...);
+
 				impl::_push(L, std::make_tuple(args...));
 				lua_pcall(L, sizeof...(Args), LUA_MULTRET, 0);
+
 				return L;
 			}
 

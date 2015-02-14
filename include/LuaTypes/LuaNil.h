@@ -2,8 +2,7 @@
 
 #pragma once
 
-// way to remove this dependency through forward declaring LuaTypeTraits ???
-#include "impl\LuaTypeTraits.h"
+// might have to include some files here, but it seems to compile fine
 
 namespace autoLua {
 
@@ -16,6 +15,8 @@ namespace autoLua {
 	};
 
 	namespace impl {
+
+		template <typename T> struct LuaTypeTraits;
 
 		template <>
 		struct LuaTypeTraits<LuaNil> {

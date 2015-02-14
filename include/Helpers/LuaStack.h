@@ -2,7 +2,8 @@
 
 #pragma once
 
-#include "impl/function_impl.h"
+#include "impl\function_impl.h"
+//#include "LuaTypes\Tuple.h"
 
 // Helper class that interacts directly with the lua stack
 // Replaced LuaConverter (which might be brought back due to it's highly tailored nature)
@@ -27,20 +28,28 @@ namespace autoLua {
 			operator T() {
 				return impl::LuaTypeTraits<T>::popValue(L);
 			}
+
 			template <typename... T>
 			void move(std::tuple<T&...>& args) {
 				args = impl::_getArgs<T...>(L);
 			}
 
 			template <typename T>
-			LuaStack& operator=(T value) {
+			LuaStack& operator<<(T value) {
 				impl::LuaTypeTraits<T>::pushValue(L, value);
 				return *this;
 			}
+
 			template <int N>
-			LuaStack& operator=(const char(&name)[N]) {
-				return (*this = std::string(name));
-			};
+			LuaStack& operator<<(const char(&name)[N]) {
+				return *this << std::string(name);
+			}
+
+			template <typename T>
+			LuaStack& operator>>(T& value) {
+				value = impl::LuaTypeTraits<T>::popValue(L);
+				return *this;
+			}
 
 	};
 
