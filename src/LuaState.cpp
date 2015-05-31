@@ -4,7 +4,13 @@
 
 namespace autoLua {
 
-	LuaState::LuaState(bool debug) : LuaState(LuaState::defaultSetup, debug) { }
+	LuaState::LuaState() : LuaState(LuaState::defaultSetup) { }
+
+	LuaState::LuaState(const std::function<lua_State*( void )>& setupLua) : L(setupLua()) { //, stack_trace_on_debug(debug) {
+		registry = lua_newregister(L);
+		//lua_atpanic(L, defaultPanic);
+	}
+
 	LuaState::~LuaState() {
 		lua_closeregister(registry);
 		lua_close(L);
@@ -28,6 +34,10 @@ namespace autoLua {
 
 	lua_State* LuaState::defaultSetup() {
 		return luaL_newstate();
+	}
+
+	int LuaState::defaultPanic(lua_State* L) {
+		return 0;
 	}
 
 }

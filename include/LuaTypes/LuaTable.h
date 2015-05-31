@@ -4,6 +4,9 @@
 
 //#include "impl\function_impl.h"
 #include "impl\LuaRegistry.h"
+#include "Exceptions\LuaException.h"
+
+// Need to rework code
 
 namespace autoLua {
 
@@ -44,11 +47,14 @@ namespace autoLua {
 	}
 	*/
 
+	// class LuaBaseTable {};
+	// template <typename... T> class LuaTable : public LuaBaseTable {};
+	// class LuaMetatable : public LuaBaseTable {};
+
 	// Find way to merge with LuaTable ???
 	// builds table on stack (current execution)
 	class LuaMetatable {
-		private:
-			impl::LuaRegistry* reg;
+		impl::LuaRegistry* reg;
 
 		public:
 			LuaMetatable();
@@ -96,9 +102,8 @@ namespace autoLua {
  
 	template <typename... T>
 	class LuaTable {
-		private:
-			std::tuple<T...> values;
-			LuaMetatable meta;
+		std::tuple<T...> values;
+		LuaMetatable meta;
 	
 		public:
 			LuaTable(T... ts) : values(std::make_tuple(ts...)), meta() { }
@@ -125,8 +130,7 @@ namespace autoLua {
 	// override for templating on void (should I override LuaTypeTraits to???)
 	template <>
 	class LuaTable<void> {
-		private:
-			LuaMetatable meta;
+		LuaMetatable meta;
 
 		public:
 			LuaTable() : meta() { }
@@ -137,7 +141,7 @@ namespace autoLua {
 			void fillTable(lua_State* L) { }
 
 			static LuaTable<void> grabTable(lua_State* L, int idx) {
-				if ( !impl::LuaTypeTraits<LuaTable<void>>::isA(L, idx) ) throw;
+				if ( !impl::LuaTypeTraits<LuaTable<int>>::isA(L, idx) ) throw LuaTypeError("LuaTable<void>::grabTable", "Not an empty table");
 				return LuaTable<void>();
 			}
 	};
@@ -152,9 +156,9 @@ namespace autoLua {
 		template <typename... T>
 		std::tuple<T...> _getLuaTable(lua_State* L, int idx) {
 			idx = lua_realindex(L, idx);
-			while ( lua_next(L, idx) ) {
+			while (lua_next(L, idx))
 				lua_pushvalue(L, -2);
-			}
+
 			// currently slightly wrong (now: value, key -> expected: key, value) quick future fix
 			return _getArgs<T...>(L);
 		}

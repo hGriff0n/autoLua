@@ -27,7 +27,7 @@ namespace autoLua {
 			}
 		};
 
-		// override for void returns
+		// specialization for void returns
 		template <>
 		struct _WrapperImpl<void> {
 			template <int N, typename... Args>
@@ -37,7 +37,7 @@ namespace autoLua {
 			}
 		};
 
-		// adds a override for a lua_CFunction
+		// specialization for lua_CFunction
 		template <>
 		struct _WrapperImpl<int> {
 			template <int N, typename... Args>
@@ -45,6 +45,7 @@ namespace autoLua {
 				_push(L, std::forward<int>(_unpack(func, _getArgs<Args...>(L))));
 				return N;
 			}
+
 			template <int N>	// templated to enable duck typing
 			static int execute(lua_State* L, const std::function<int(lua_State*)>& func) {
 				return func(L);
@@ -58,8 +59,7 @@ namespace autoLua {
 	// Wraps a C++ function for lua to call
 	template <int N, typename Ret, typename... Args>
 	class FunctionWrapper : public impl::BaseFunctionWrapper {
-		private:
-			std::function<Ret(Args...)> func;
+		std::function<Ret(Args...)> func;
 
 		public:
 			FunctionWrapper(lua_State* L, const std::function<Ret(Args...)>& _func) : /*lua(L),*/ func(_func) {
@@ -86,6 +86,8 @@ namespace autoLua {
 		return WrapperPtr(new FunctionWrapper<sizeof...(Ret), std::tuple<Ret...>, Args...>{ L, func });
 	}
 
+
+	// Is this supposed to "deregister" the function from lua ???
 	void unwrap(WrapperPtr&& wrapper) {
 
 	}

@@ -8,8 +8,7 @@ namespace autoLua {
 
 	template <typename... T>
 	class LuaTuple {
-		private:
-			std::tuple<T&...> _tuple;
+		std::tuple<T&...> _tuple;
 
 		public:
 			LuaTuple(T&... args) : _tuple(args...) { }

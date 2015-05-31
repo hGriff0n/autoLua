@@ -5,16 +5,16 @@
 #include "impl\function_impl.h"
 //#include "LuaTypes\Tuple.h"
 
-// Helper class that interacts directly with the lua stack
-// Replaced LuaConverter (which might be brought back due to it's highly tailored nature)
 
-// slight problem with tuple override (see error message in main.cpp)
+#include <iostream>
+#include "debugTesting.h"
+
+// Helper class that handles interaction with the lua stack (often for developer's use)
 
 namespace autoLua {
 
 	class LuaStack {
-		private:
-			lua_State* L;
+		lua_State* L;
 
 		public:
 			LuaStack(lua_State* lua) : L(lua) { }
@@ -22,29 +22,35 @@ namespace autoLua {
 				L = nullptr;
 			}
 
-			// tries to convert LuaStack to std::tuple when I don't want it to (and it shouldn't)
-			// see error comment in main.cpp
+			// used to have an error here when chained with LuaTuple (see main.cpp)
+			// pops and returns the element at the top of the stack if it convertible to type T
 			template <typename T>
 			operator T() {
+				//debug::debugStack(L, std::cout);
+				//std::cin.get();
 				return impl::LuaTypeTraits<T>::popValue(L);
 			}
 
+			// fills the given tuple by popping elements off the stack (change name??? have to change LuaTuple::operator=)
 			template <typename... T>
 			void move(std::tuple<T&...>& args) {
 				args = impl::_getArgs<T...>(L);
 			}
 
+			// pushes an element onto the stack
 			template <typename T>
 			LuaStack& operator<<(T value) {
 				impl::LuaTypeTraits<T>::pushValue(L, value);
 				return *this;
 			}
 
+			// pushes a string literal onto the stack
 			template <int N>
 			LuaStack& operator<<(const char(&name)[N]) {
 				return *this << std::string(name);
 			}
 
+			// extracts the top element of the stack into the passed variable
 			template <typename T>
 			LuaStack& operator>>(T& value) {
 				value = impl::LuaTypeTraits<T>::popValue(L);

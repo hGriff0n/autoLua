@@ -3,7 +3,7 @@
 #pragma once
 
 #include <initializer_list>
-
+// do I even need this file (aside from the lua definitions) ???
 
 struct lua_State;
 
@@ -14,6 +14,7 @@ bool equalsOne(T obj, std::initializer_list<T> comp_list) {
 		if ( obj == x ) return true;
 	return false;
 }
+
 template <typename T>
 bool notEquals(T obj, std::initializer_list<T> comp_list) {
 	return !equalsOne(obj, comp_list);

@@ -17,6 +17,7 @@ namespace autoLua {
 		// Factory. Recursively inherits from itself
 		template <size_t N, size_t... Is>
 		struct _IndicesBuilder : _IndicesBuilder<N - 1, N - 1, Is...> { };
+
 		template <size_t... Is>
 		struct _IndicesBuilder<0, Is...> {
 			using type = _Indices<Is...>;

@@ -3,7 +3,6 @@
 #pragma once
 
 #include "Helpers\LuaVariable.h"
-#include "Helpers\LuaStack.h"
 
 // Wrapper of lua_State that provides a central hub for working with lua
 
@@ -12,22 +11,18 @@
 namespace autoLua {
 
 	class LuaState {
-		private:
-			lua_State* L;
-			bool stack_trace_on_debug;
-			impl::LuaRegistry* registry;
+		lua_State* L;
+		impl::LuaRegistry* registry;
 
-			static lua_State* defaultSetup();
+		static lua_State* defaultSetup();
+		static int defaultPanic(lua_State*);
 
 		public:
-			LuaState(bool = false);
-			LuaState(const std::function<lua_State*(void)>& setupLua, bool debug = false)
-					: L(setupLua()), stack_trace_on_debug(debug) {
-				registry = lua_newregister(L);
-			}
+		    LuaState();// bool = false);
+			LuaState(const std::function<lua_State*( void )>&);//, bool = false);
 			~LuaState();
 	
-			// get underlying lua_State* implicitly for reverse compatibility with standard lua library functions
+			// implicit cast to lua_State* for reverse compatibility with standard lua library functions
 			operator lua_State*();
 			// temporary method for LuaMetatable work
 			operator impl::LuaRegistry*();
@@ -35,12 +30,16 @@ namespace autoLua {
 			// get direct access to the lua stack
 			LuaStack operator*(void);
 
+			// global index
 			template <typename T>
 			LuaVariable operator[](T name) {
 				return LuaVariable(L, name, registry);
 			}
 
+			// run the lua code
 			LuaStack run(std::string);
+
+			// load the lua file
 			//LuaState& load(std::string);
 
 			// bind c++ class to lua (subject to change)

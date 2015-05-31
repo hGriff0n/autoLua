@@ -24,6 +24,7 @@ namespace autoLua {
 	impl::LuaRegistry* lua_newregister(lua_State* L) {
 		return new impl::LuaRegistry(L);
 	}
+
 	void lua_closeregister(impl::LuaRegistry* registry) {
 		delete registry;
 	}
